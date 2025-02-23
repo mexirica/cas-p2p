@@ -3,16 +3,15 @@ package store
 import (
 	"bytes"
 	"fmt"
-	"github.com/mexirica/cas-p2p/pkg/crypto"
 	"io"
 	"testing"
 )
 
 func TestPathTransformFunc(t *testing.T) {
-	key := "momsbestpicture"
+	key := "test_file.txt"
 	pathKey := CASPathTransformFunc(key)
-	expectedFilename := "6804429f74181a63c50c3d81d733a12f14a353ff"
-	expectedPathName := "68044/29f74/181a6/3c50c/3d81d/733a1/2f14a/353ff"
+	expectedFilename := "8b0ae1f67e43f299fa4a98fce557cf479528a39b"
+	expectedPathName := "8b0ae/1f67e/43f29/9fa4a/98fce/557cf/47952/8a39b"
 	if pathKey.PathName != expectedPathName {
 		t.Errorf("have %s want %s", pathKey.PathName, expectedPathName)
 	}
@@ -24,22 +23,21 @@ func TestPathTransformFunc(t *testing.T) {
 
 func TestStore(t *testing.T) {
 	s := newStore()
-	id := crypto.GenerateID()
 	defer teardown(t, s)
 
 	for i := 0; i < 50; i++ {
 		key := fmt.Sprintf("foo_%d", i)
 		data := []byte("some jpg bytes")
 
-		if _, err := s.writeStream(id, key, bytes.NewReader(data)); err != nil {
+		if _, err := s.writeStream(key, bytes.NewReader(data)); err != nil {
 			t.Error(err)
 		}
 
-		if ok := s.Has(id, key); !ok {
+		if ok := s.Has(key); !ok {
 			t.Errorf("expected to have key %s", key)
 		}
 
-		_, r, err := s.Read(id, key)
+		_, r, err := s.Read(key)
 		if err != nil {
 			t.Error(err)
 		}
@@ -49,11 +47,11 @@ func TestStore(t *testing.T) {
 			t.Errorf("want %s have %s", data, b)
 		}
 
-		if err := s.Delete(id, key); err != nil {
+		if err := s.Delete(key); err != nil {
 			t.Error(err)
 		}
 
-		if ok := s.Has(id, key); ok {
+		if ok := s.Has(key); ok {
 			t.Errorf("expected to NOT have key %s", key)
 		}
 	}
