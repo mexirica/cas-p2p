@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-var EncKey = crypto.NewEncryptionKey()
+var EncKey = crypto.DeriveKey("super-secret-passphrase")
 
 func makeServer(listenAddr string, nodes ...string) *server.FileServer {
 	tcptransportOpts := p2p.TCPTransportOpts{
@@ -39,6 +39,8 @@ func makeServer(listenAddr string, nodes ...string) *server.FileServer {
 }
 
 func main() {
+	// Create three servers, two of them are peers and one is a client
+	// that will store and retrieve files from the other two.
 	s1 := makeServer(":8080", "")
 	s2 := makeServer(":8081", "")
 	s3 := makeServer(":8082", ":8080", ":8081")
@@ -66,6 +68,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println(string(b))
-
+	fmt.Printf("content received: %s", string(b))
 }

@@ -4,9 +4,12 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/md5"
+	"crypto/pbkdf2"
 	"crypto/rand"
+	"crypto/sha1"
 	"encoding/hex"
 	"io"
+	"log"
 )
 
 func GenerateID() string {
@@ -24,6 +27,15 @@ func NewEncryptionKey() []byte {
 	keyBuf := make([]byte, 32)
 	io.ReadFull(rand.Reader, keyBuf)
 	return keyBuf
+}
+
+func DeriveKey(passphrase string) []byte {
+	salt := []byte("cas-p2p")
+	key, err := pbkdf2.Key(sha1.New, passphrase, salt, 4092, 32)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return key
 }
 
 func copyStream(stream cipher.Stream, blockSize int, src io.Reader, dst io.Writer) (int, error) {
